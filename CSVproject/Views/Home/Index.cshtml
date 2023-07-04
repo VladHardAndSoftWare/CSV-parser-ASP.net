@@ -1,0 +1,110 @@
+﻿@model List<Person>
+
+<div class="container">
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        Загрузить CSV Файл
+    </button>
+    <h3><strong>@TempData["Message"]</strong></h3>
+
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Загрузить CSV Файл</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="Upload">
+                        <div class="form-group">
+                            <p>Файл CSV до 250 строк</p>
+                            <br />
+                            <div class="input-group mb-3">
+                                <input type="file" class="form-control" aria-describedby="inputGroupFileAddon03" aria-label="Upload" id="file" name="file" accept=".csv">
+                            </div>
+                        </div>
+                        <div class="alert alert-danger mt-3" id="errorAlert" role="alert" style="display: none;"></div>
+                        <br />
+                        <button type="submit" class="btn btn-outline-success">Загрузить</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table id="peopleTable" class="table table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">User Id</th>
+                <th scope="col">@Html.ActionLink("First Name", "Index", new { sortOrder = ViewBag.FirstNameSortParam })</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">Sex</th>
+                <th scope="col">Email</th>
+                <th scope="col">Phone</th>
+                <th scope="col">@Html.ActionLink("Date of Birth", "Index", new { sortOrder = ViewBag.DateOfBirthSortParam })</th>
+                <th scope="col">Job Title</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var person in Model)
+            {
+                <tr>
+                    <td scope="row">@person.Id</td>
+                    <td scope="row">@person.UserId</td>
+                    <td scope="row">@person.FirstName</td>
+                    <td scope="row">@person.LastName</td>
+                    <td scope="row">@person.Sex</td>
+                    <td scope="row">@person.Email</td>
+                    <td scope="row">@person.Phone</td>
+                    <td scope="row">@person.DateTime.ToShortDateString()</td>
+                    <td scope="row">@person.JobTitle</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        function displayError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.textContent = message;
+            errorAlert.style.display = 'block';
+        }
+
+        function hideError() {
+            const errorAlert = document.getElementById('errorAlert');
+            errorAlert.style.display = 'none';
+        }
+
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+            hideError();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: '@Url.Action("Upload", "Home")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('#staticBackdrop').modal('hide');
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    displayError(xhr.responseText);
+                }
+            });
+        });
+    </script>
+}
+
+
+
